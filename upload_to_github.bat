@@ -33,7 +33,7 @@ git remote remove origin 2>nul
 git remote add origin %REPO_URL%
 
 echo Pushing code to GitHub...
-git push -u origin main
+git push -u origin main --force
 
 echo.
 echo =========================================
