@@ -1,0 +1,46 @@
+<section class="groups-grid">
+  {% for group in groups %}
+  <article class="group-card">
+    <h2>{{ group.name }}</h2>
+    <div class="group-table-wrap">
+      <table class="group-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Team</th>
+            <th>GP</th>
+            <th>W</th>
+            <th>D</th>
+            <th>L</th>
+            <th>GD</th>
+            <th>Pts</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in group.entries %}
+          <tr>
+            <td>{{ entry.rank or "-" }}</td>
+            <td>
+              <span class="team-line">
+                {% if entry.flag_path %}<img class="team-flag" src="{{ entry.flag_path }}" alt="{{ entry.team_name }} flag" />{% endif %}
+                <span>{{ entry.team_name }}</span>
+              </span>
+            </td>
+            <td>{{ entry.games_played or "-" }}</td>
+            <td>{{ entry.wins or "-" }}</td>
+            <td>{{ entry.draws or "-" }}</td>
+            <td>{{ entry.losses or "-" }}</td>
+            <td>{{ entry.goal_difference or "-" }}</td>
+            <td><strong>{{ entry.points or "-" }}</strong></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </article>
+  {% else %}
+  <article class="empty-state">
+    <p>No group data available right now.</p>
+  </article>
+  {% endfor %}
+</section>

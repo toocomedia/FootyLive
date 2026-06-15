@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <h1>{{ page_title }}</h1>
+  <p>{{ count }} scheduled or live match{% if count != 1 %}es{% endif %} returned.</p>
+  <div class="matches-nav-grid">
+    <div></div>
+    
+    <div class="date-controller" style="margin-top: 0;">
+      <a href="/matches?date={{ prev_date }}" class="date-btn" title="Previous Day">
+        <svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg>
+      </a>
+
+      <div class="date-display-text">
+        {{ display_date_text }}
+      </div>
+
+      <a href="/matches?date={{ next_date }}" class="date-btn" title="Next Day">
+        <svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+      </a>
+    </div>
+
+    <div style="display: flex; justify-content: flex-end;">
+      <div class="date-picker-wrapper custom-day-btn" style="margin-left: 0;">
+        <form method="get" action="/matches" style="margin: 0; width: 100%; height: 100%;">
+          <input type="date" name="date" value="{{ selected_date }}" onchange="this.form.submit()" class="date-input-hidden" />
+          <div class="date-display">
+            <svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 002 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5z"/></svg>
+            <span>Custom Day</span>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if error %}
+<div class="error-box">{{ error }}</div>
+{% endif %}
+
+{% include "partials/match_list.html" %}
+{% endblock %}

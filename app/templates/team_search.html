@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <h1>Team Search</h1>
+  <form class="search-form" method="get" action="/teams/search">
+    <input type="text" name="q" placeholder="Search teams" value="{{ query }}" />
+    <button type="submit">Search</button>
+  </form>
+</section>
+
+{% if error %}
+<div class="error-box">{{ error }}</div>
+{% endif %}
+
+{% if query %}
+<p class="section-note">{{ count }} result{% if count != 1 %}s{% endif %} for "{{ query }}".</p>
+{% endif %}
+
+<section class="cards">
+  {% for team in teams %}
+  <article class="card">
+    <h2>{{ team.name }}</h2>
+    <p>{{ team.competition or "Competition unavailable" }}</p>
+    <small>ID: {{ team.id }}</small>
+  </article>
+  {% else %}
+  <article class="empty-state">
+    <p>{% if query %}No teams found.{% else %}Search for a team to begin.{% endif %}</p>
+  </article>
+  {% endfor %}
+</section>
+{% endblock %}

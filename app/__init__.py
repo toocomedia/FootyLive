@@ -1,0 +1,1 @@
+"""Footy application package."""

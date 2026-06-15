@@ -1,0 +1,52 @@
+<section class="cards">
+  {% for match in matches %}
+  <a class="card-link" href="/matches/{{ match.id }}">
+    <article class="card">
+      <div class="card-head">
+        <span class="competition-wrap">
+          <span class="competition">{{ match.competition or "Unknown competition" }}</span>
+          {% if match.is_live %}<span class="live-badge">Live</span>{% endif %}
+        </span>
+        <span class="status">
+          {% if match.status != 'In Progress' %}{{ match.status }} &bull; {% endif %}
+          {{ match.minute or match.kickoff_time_formatted or "Time unavailable" }}
+        </span>
+      </div>
+      
+      <div class="match-teams-layout">
+        <div class="team-side home">
+          {% if match.home_team.flag_path %}
+          <img class="team-flag" src="{{ match.home_team.flag_path }}" alt="{{ match.home_team.name }} flag" />
+          {% else %}
+          <span class="team-avatar">{{ match.home_team.name[0] }}</span>
+          {% endif %}
+          <span class="team-name">{{ match.home_team.name }}</span>
+        </div>
+        
+        <div class="score-center">
+          {% if not match.is_live and not match.is_finished %}
+          <span class="score-pending">{{ match.kickoff_time_formatted or "Soon" }}</span>
+          {% else %}
+          <span class="score-number">{{ match.score.home if match.score.home is not none else "-" }}</span>
+          <span class="score-divider">-</span>
+          <span class="score-number">{{ match.score.away if match.score.away is not none else "-" }}</span>
+          {% endif %}
+        </div>
+        
+        <div class="team-side away">
+          {% if match.away_team.flag_path %}
+          <img class="team-flag" src="{{ match.away_team.flag_path }}" alt="{{ match.away_team.name }} flag" />
+          {% else %}
+          <span class="team-avatar">{{ match.away_team.name[0] }}</span>
+          {% endif %}
+          <span class="team-name">{{ match.away_team.name }}</span>
+        </div>
+      </div>
+    </article>
+  </a>
+  {% else %}
+  <article class="empty-state">
+    <p>No matches available right now.</p>
+  </article>
+  {% endfor %}
+</section>

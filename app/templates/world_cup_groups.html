@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <h1>{{ groups_title }}</h1>
+  <p>{{ count }} group{% if count != 1 %}s{% endif %} returned by <code>/api/world-cup/groups</code>.</p>
+</section>
+
+{% if error %}
+<div class="error-box">{{ error }}</div>
+{% endif %}
+
+{% include "partials/group_tables.html" %}
+{% endblock %}

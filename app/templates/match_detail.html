@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% block content %}
+{% if error %}
+<div class="error-box">{{ error }}</div>
+{% elif match %}
+<section class="hero">
+  <h1>{{ match.home_team.name }} vs {{ match.away_team.name }}</h1>
+  <p>
+    {{ match.competition or "Unknown competition" }}
+    {% if match.is_live %}<span class="live-badge">Live</span>{% endif %}
+    {% if match.status != 'In Progress' %}• {{ match.status }}{% endif %}
+  </p>
+</section>
+
+<article class="detail-card">
+  <div class="detail-scoreboard">
+    <div class="detail-team detail-team-home">
+      {% if match.home_team.flag_path %}
+      <img class="team-flag detail-team-flag" src="{{ match.home_team.flag_path }}" alt="{{ match.home_team.name }} flag" />
+      {% else %}
+      <span class="team-avatar detail-team-flag">{{ match.home_team.name[0] }}</span>
+      {% endif %}
+      <span class="detail-team-name">{{ match.home_team.name }}</span>
+    </div>
+    <div class="detail-score-center">
+      {% if not match.is_live and not match.is_finished %}
+      <span class="detail-score-pending">{{ match.kickoff_time_formatted or "Soon" }}</span>
+      {% else %}
+      <span class="detail-score-number">{{ match.score.home if match.score.home is not none else "-" }}</span>
+      <span class="detail-score-separator">:</span>
+      <span class="detail-score-number">{{ match.score.away if match.score.away is not none else "-" }}</span>
+      {% endif %}
+    </div>
+    <div class="detail-team detail-team-away">
+      {% if match.away_team.flag_path %}
+      <img class="team-flag detail-team-flag" src="{{ match.away_team.flag_path }}" alt="{{ match.away_team.name }} flag" />
+      {% else %}
+      <span class="team-avatar detail-team-flag">{{ match.away_team.name[0] }}</span>
+      {% endif %}
+      <span class="detail-team-name">{{ match.away_team.name }}</span>
+    </div>
+  </div>
+  <div class="match-info-grid">
+    <div class="info-card">
+      <div class="info-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+      </div>
+      <div class="info-content">
+        <span class="info-label">Status</span>
+        <span class="info-value">
+          {% if match.is_live %}
+            <span style="color: #e20047;">Live</span>
+          {% elif match.is_finished %}
+            Finished
+          {% else %}
+            Upcoming
+          {% endif %}
+        </span>
+      </div>
+    </div>
+
+    {% if match.minute %}
+    <div class="info-card">
+      <div class="info-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+      </div>
+      <div class="info-content">
+        <span class="info-label">Time</span>
+        <span class="info-value">
+          <span class="live-time-ticker">{{ match.minute }}</span>
+          {% if match.result and match.is_finished %} ({{ match.result }}){% endif %}
+        </span>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="info-card">
+      <div class="info-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+      </div>
+      <div class="info-content">
+        <span class="info-label">Kickoff</span>
+        <span class="info-value">{{ match.kickoff_time_formatted or match.kickoff_time or "Unknown" }}</span>
+      </div>
+    </div>
+
+    {% if match.venue %}
+    <div class="info-card">
+      <div class="info-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+      </div>
+      <div class="info-content">
+        <span class="info-label">Venue</span>
+        <span class="info-value">{{ match.venue }}</span>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if match.referee %}
+    <div class="info-card">
+      <div class="info-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      </div>
+      <div class="info-content">
+        <span class="info-label">Referee</span>
+        <span class="info-value">{{ match.referee }}</span>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</article>
+
+{% if match.events %}
+<article class="detail-card">
+  <div class="section-head">
+    <h2>Key Events</h2>
+    <span class="section-note">{{ match.events|length }} event{% if match.events|length != 1 %}s{% endif %}</span>
+  </div>
+  <section class="event-list" aria-label="Match event timeline">
+    {% for event in match.events %}
+    <div class="event-row {% if event.team_id == match.home_team.id %}event-row-home{% elif event.team_id == match.away_team.id %}event-row-away{% else %}event-row-neutral{% endif %}">
+      <div class="event-side event-side-home">
+        {% if event.team_id == match.home_team.id %}
+        <div class="event-content event-content-home">
+          <div class="event-icon-wrap event-icon-wrap-{{ event.event_type }}">
+            {% if event.icon_path %}<img class="event-icon" src="{{ event.icon_path }}" alt="{{ event.label }}" />{% endif %}
+          </div>
+          <div class="event-body">
+            <div class="event-meta">
+              <span class="event-label">{{ event.label }}</span>
+              {% if event.player_name %}<span class="event-player">{{ event.player_name }}</span>{% endif %}
+            </div>
+            {% if event.text and not event.player_name %}<p>{{ event.text }}</p>{% endif %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+      <div class="event-minute">{{ event.minute or "-" }}</div>
+      <div class="event-side event-side-away">
+        {% if event.team_id == match.away_team.id or (event.team_id != match.home_team.id and event.team_id != match.away_team.id) %}
+        <div class="event-content event-content-away">
+          <div class="event-body">
+            <div class="event-meta">
+              <span class="event-label">{{ event.label }}</span>
+              {% if event.player_name %}<span class="event-player">{{ event.player_name }}</span>{% endif %}
+            </div>
+            {% if event.text and not event.player_name %}<p>{{ event.text }}</p>{% endif %}
+          </div>
+          <div class="event-icon-wrap event-icon-wrap-{{ event.event_type }}">
+            {% if event.icon_path %}<img class="event-icon" src="{{ event.icon_path }}" alt="{{ event.label }}" />{% endif %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </section>
+</article>
+{% endif %}
+{% else %}
+<div class="error-box">Match not found.</div>
+{% endif %}
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    {% if match and match.is_live %}
+    const ticker = document.querySelector('.live-time-ticker');
+    if (ticker) {
+      let text = ticker.innerText;
+      let matchNumber = text.match(/(\d+)/);
+      if (matchNumber) {
+        let min = parseInt(matchNumber[1]);
+        setInterval(() => {
+          min++;
+          ticker.innerText = text.replace(/\d+/, min);
+        }, 60000); // Increment every 60 seconds
+      }
+    }
+    {% endif %}
+  });
+</script>
+{% endblock %}

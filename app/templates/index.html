@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <p>{{ count }} live match{% if count != 1 %}es{% endif %} returned via <code>/api/matches/live</code> API feed.</p>
+</section>
+
+{% if error %}
+<div class="error-box">{{ error }}</div>
+{% endif %}
+
+{% include "partials/match_list.html" %}
+{% endblock %}

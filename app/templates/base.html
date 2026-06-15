@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ page_title }} | Footy API</title>
+    <script>
+      (function () {
+        const storedTheme = localStorage.getItem("theme-mode");
+        const theme = storedTheme === "light" || storedTheme === "dark" ? storedTheme : "dark";
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="site-header wc26-container">
+      <div class="header-inner">
+        <div class="brand-block" style="display: flex; align-items: center; gap: 0.5rem;">
+          <a class="brand" style="margin: 0; font-size: 1.25rem;" href="/">FootyLive</a>
+          <div class="wc-logo-mask" style="width: 20px; height: 30px;" title="World Cup 2026"></div>
+        </div>
+
+        <div class="header-actions">
+          <nav class="nav-links">
+            <a href="/">Live</a>
+            <a href="/matches">Matches</a>
+            <a href="/world-cup/groups">World Cup Groups</a>
+          </nav>
+          <button id="theme-toggle" class="theme-toggle-btn" type="button" aria-label="Toggle theme">
+            <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+    <main class="content">
+      {% block content %}{% endblock %}
+    </main>
+    <footer class="site-footer" style="margin-top: 3rem; padding: 2rem 0; text-align: center; border-top: 1px solid var(--surface-strong); color: var(--muted); font-size: 0.9rem;">
+      <p>FootyLive API &copy; 2026</p>
+      <div style="margin-top: 0.5rem; display: flex; justify-content: center; gap: 1rem;">
+        <a href="/docs" style="color: var(--muted); text-decoration: none; font-weight: 600;">API Documentation</a>
+        <a href="/redoc" style="color: var(--muted); text-decoration: none; font-weight: 600;">ReDoc</a>
+      </div>
+    </footer>
+    <script>
+      const root = document.documentElement;
+      const themeToggle = document.getElementById("theme-toggle");
+
+      if (themeToggle) {
+        themeToggle.addEventListener("click", () => {
+          const currentTheme = root.dataset.theme;
+          const nextTheme = currentTheme === "light" ? "dark" : "light";
+          root.dataset.theme = nextTheme;
+          localStorage.setItem("theme-mode", nextTheme);
+        });
+      }
+    </script>
+  </body>
+</html>
