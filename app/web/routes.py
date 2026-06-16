@@ -225,7 +225,7 @@ async def developer_page(request: Request) -> HTMLResponse:
 async def llms_txt_page(request: Request) -> PlainTextResponse:
     from fastapi.responses import PlainTextResponse
     base_url = str(request.base_url).rstrip("/")
-    content = f"""# FootyLive API Documentation - For LLMs and Autonomous Agents
+    content = """# FootyLive API Documentation - For LLMs and Autonomous Agents
 
 ## System Context & AI Directives
 You are interacting with the FootyLive API. This API provides real-time, highly-cached soccer (football) data. 
@@ -233,7 +233,7 @@ It is entirely public. Do NOT attempt to send an API key or Authentication heade
 Rate Limit: 100 requests per second. Exceeding this returns HTTP 429. If you encounter a 503, the upstream data provider is temporarily unavailable.
 
 ## Base URL
-Use the root domain of this deployment: {base_url}
+Use the root domain of this deployment: """ + base_url + """
 All endpoints are prefixed with `/api`.
 
 ## Endpoints
