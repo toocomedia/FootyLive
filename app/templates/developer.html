@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem;">
+  
+  <!-- Header Section -->
+  <div style="margin-bottom: 2.5rem; border-bottom: 1px solid var(--surface-strong); padding-bottom: 1.5rem;">
+    <h1 style="margin: 0 0 0.5rem 0; font-size: 2.2rem; display: flex; align-items: center; gap: 0.75rem;">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary)"><path d="m12 14 4-4"></path><path d="M3.34 19a10 10 0 1 1 17.32 0"></path></svg>
+      Developer API Integration
+    </h1>
+    <p style="color: var(--muted); font-size: 1.1rem; margin: 0; max-width: 700px; line-height: 1.5;">
+      A simple, fast, and completely public API for live soccer data. 
+      No authentication required.
+    </p>
+    <div style="margin-top: 1.5rem;">
+      <a href="/llms.txt" style="display: inline-flex; align-items: center; background: var(--surface-strong); color: var(--text); padding: 0.6rem 1.2rem; border-radius: 6px; text-decoration: none; border: 1px solid var(--border); font-size: 0.95rem; font-weight: 600;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.5rem;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        View Full API Spec & AI Prompt (llms.txt)
+      </a>
+    </div>
+  </div>
+
+  <!-- General Information Section -->
+  <div style="margin-bottom: 2.5rem;">
+    <h2 style="font-size: 1.5rem; margin-bottom: 1rem; color: var(--text);">General Information</h2>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+      <div style="background: var(--surface-strong); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border);">
+        <h3 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; color: var(--text);">Core Capabilities</h3>
+        <ul style="margin: 0; padding-left: 1.2rem; color: var(--muted); line-height: 1.6; font-size: 0.95rem;">
+          <li><strong>Real-time scores</strong> for major leagues (Live & Today endpoints).</li>
+          <li><strong>League Standings</strong> including group phases (e.g., World Cup, Champions League).</li>
+          <li><strong>Match Details</strong> featuring venue, referee, and live events (goals, cards).</li>
+          <li><strong>Team Searching</strong> to quickly locate specific clubs.</li>
+        </ul>
+      </div>
+
+      <div style="background: var(--surface-strong); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border);">
+        <h3 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; color: var(--text);">Technical Details</h3>
+        <ul style="margin: 0; padding-left: 1.2rem; color: var(--muted); line-height: 1.6; font-size: 0.95rem;">
+          <li><strong>Format:</strong> All endpoints return strictly formatted <code>JSON</code>.</li>
+          <li><strong>Rate Limits:</strong> Globally limited to <strong>100 requests per second</strong>. Exceeding this returns an HTTP <code>429 Too Many Requests</code>.</li>
+          <li><strong>Caching:</strong> High-traffic endpoints utilize an aggressive in-memory TTLCache to ensure near-instant response times.</li>
+          <li><strong>Upstream Handling:</strong> If the primary data provider fails, the API gracefully returns HTTP <code>503 Service Unavailable</code>.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Code Snippets Section -->
+  <div>
+    <h2 style="font-size: 1.5rem; margin-bottom: 1rem; color: var(--text);">Integration Examples</h2>
+    <div style="border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--surface-strong);">
+      <div style="display: flex; border-bottom: 1px solid var(--border); background: var(--surface); padding: 0 1rem;">
+        <button type="button" class="lang-tab" data-target="tab-node" style="background: none; border: none; padding: 1rem 1.5rem; font-size: 1rem; font-weight: 600; cursor: pointer; color: var(--text); border-bottom: 2px solid var(--primary); margin-bottom: -1px;">
+          Node.js
+        </button>
+        <button type="button" class="lang-tab" data-target="tab-php" style="background: none; border: none; padding: 1rem 1.5rem; font-size: 1rem; font-weight: 600; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px;">
+          PHP
+        </button>
+        <button type="button" class="lang-tab" data-target="tab-python" style="background: none; border: none; padding: 1rem 1.5rem; font-size: 1rem; font-weight: 600; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px;">
+          Python
+        </button>
+      </div>
+
+      <div style="padding: 1.5rem;">
+        <!-- Node.js Example -->
+        <div id="tab-node" class="lang-pane" style="display: block;">
+<pre style="margin: 0; overflow-x: auto; font-family: 'Courier New', Courier, monospace; font-size: 0.95rem; color: var(--ink); line-height: 1.4;">
+const fetchLiveMatches = async () => {
+  try {
+    const response = await fetch('{{ request.base_url }}api/matches/live');
+    
+    if (response.status === 429) {
+      console.error('Rate limit exceeded');
+      return;
+    }
+    
+    const data = await response.json();
+    console.log(`Live Matches: ${data.count}`);
+    
+    data.matches.forEach(match => {
+      console.log(`${match.home_team.name} vs ${match.away_team.name}`);
+    });
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+};
+
+fetchLiveMatches();
+</pre>
+        </div>
+
+        <!-- PHP Example -->
+        <div id="tab-php" class="lang-pane" style="display: none;">
+<pre style="margin: 0; overflow-x: auto; font-family: 'Courier New', Courier, monospace; font-size: 0.95rem; color: var(--ink); line-height: 1.4;">
+&lt;?php
+$url = "{{ request.base_url }}api/matches/live";
+$ch = curl_init($url);
+
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$response = curl_exec($ch);
+$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+curl_close($ch);
+
+if ($httpcode == 200) {
+    $data = json_decode($response, true);
+    echo "Live Matches: " . $data['count'] . "\n";
+    foreach ($data['matches'] as $match) {
+        echo $match['home_team']['name'] . " vs " . $match['away_team']['name'] . "\n";
+    }
+} elseif ($httpcode == 429) {
+    echo "Rate limit exceeded\n";
+}
+?&gt;
+</pre>
+        </div>
+
+        <!-- Python Example -->
+        <div id="tab-python" class="lang-pane" style="display: none;">
+<pre style="margin: 0; overflow-x: auto; font-family: 'Courier New', Courier, monospace; font-size: 0.95rem; color: var(--ink); line-height: 1.4;">
+import requests
+
+url = "{{ request.base_url }}api/matches/live"
+response = requests.get(url)
+
+if response.status_code == 200:
+    data = response.json()
+    print(f"Live Matches: {data['count']}")
+    
+    for match in data.get('matches', []):
+        print(f"{match['home_team']['name']} vs {match['away_team']['name']}")
+elif response.status_code == 429:
+    print("Rate limit exceeded")
+</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const tabs = document.querySelectorAll(".lang-tab");
+    const panes = document.querySelectorAll(".lang-pane");
+
+    tabs.forEach(tab => {
+      tab.addEventListener("click", () => {
+        // Reset all tabs
+        tabs.forEach(t => {
+          t.style.color = "var(--muted)";
+          t.style.borderBottom = "2px solid transparent";
+        });
+        // Reset all panes
+        panes.forEach(p => p.style.display = "none");
+
+        // Set active tab
+        tab.style.color = "var(--text)";
+        tab.style.borderBottom = "2px solid var(--primary)";
+        
+        // Show active pane
+        const target = tab.getAttribute("data-target");
+        document.getElementById(target).style.display = "block";
+      });
+    });
+  });
+</script>
+{% endblock %}

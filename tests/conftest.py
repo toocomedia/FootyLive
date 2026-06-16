@@ -59,7 +59,7 @@ class StubMatchService:
             return []
         return [TeamSearchResult(id="home-1", name="Home FC", competition="Premier League")]
 
-    def get_world_cup_groups(self):
+    def get_league_standings(self, slug: str):
         return WorldCupGroupsResponse(
             title="FIFA World Cup Standings",
             count=1,
