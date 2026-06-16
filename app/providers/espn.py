@@ -31,16 +31,17 @@ class EspnSoccerProvider:
             event
             for event in events
             if self._competition(event).get("status", {}).get("type", {}).get("state") == "in"
+            and self._is_big_league(event)
         ]
         return [self._normalize_scoreboard_event(event) for event in live_events]
 
     def get_today_matches(self) -> list[dict[str, Any]]:
         events = self._get_scoreboard_events()
-        return [self._normalize_scoreboard_event(event) for event in events]
+        return [self._normalize_scoreboard_event(event) for event in events if self._is_big_league(event)]
 
     def get_matches_by_date(self, match_date: date) -> list[dict[str, Any]]:
         events = self._get_scoreboard_events(match_date=match_date)
-        return [self._normalize_scoreboard_event(event) for event in events]
+        return [self._normalize_scoreboard_event(event) for event in events if self._is_big_league(event)]
 
     def get_match(self, match_id: str) -> dict[str, Any] | None:
         payload = self._get_json(f"/summary?event={match_id}", allow_not_found=True)
@@ -67,19 +68,30 @@ class EspnSoccerProvider:
                     }
         return list(unique.values())
 
-    def get_world_cup_groups(self) -> dict[str, Any]:
-        payload = self._get_absolute_json(self.world_cup_standings_url)
-        children = payload.get("children")
-        if not isinstance(children, list) or not children:
-            raise UpstreamUnavailableError("ESPN did not return any World Cup group standings.")
 
+
+    def get_league_standings(self, slug: str) -> dict[str, Any]:
+        url = f"https://site.web.api.espn.com/apis/v2/sports/soccer/{slug}/standings"
+        payload = self._get_absolute_json(url, allow_not_found=True)
+        children = payload.get("children")
+        if not children:
+            return {"title": payload.get("name") or "Standings", "groups": [], "count": 0}
+        
         ordered_groups = [self._normalize_group(group) for group in children if isinstance(group, dict)]
         ordered_groups.sort(key=lambda item: item["name"])
         return {
-            "title": payload.get("name") or "FIFA World Cup Standings",
+            "title": payload.get("name") or "Standings",
             "groups": ordered_groups,
-            "count": len(ordered_groups),
+            "count": sum(len(g.get("entries", [])) for g in ordered_groups),
         }
+
+    def get_league_matches(self, slug: str) -> list[dict[str, Any]]:
+        url = f"https://site.api.espn.com/apis/site/v2/sports/soccer/{slug}/scoreboard"
+        payload = self._get_absolute_json(url, allow_not_found=True)
+        events = payload.get("events")
+        if not isinstance(events, list):
+            return []
+        return [self._normalize_scoreboard_event(event) for event in events]
 
     def _get_scoreboard_events(self, match_date: date | None = None) -> list[dict[str, Any]]:
         path = "/scoreboard"
@@ -114,6 +126,32 @@ class EspnSoccerProvider:
         if not isinstance(payload, dict):
             raise UpstreamUnavailableError("ESPN soccer returned an unexpected response format.")
         return payload
+
+    def _is_big_league(self, event: dict[str, Any]) -> bool:
+        try:
+            competition = self._competition(event)
+        except UpstreamUnavailableError:
+            return False
+            
+        notes = competition.get("notes")
+        first_note = notes[0] if isinstance(notes, list) and notes else {}
+
+        league_name = (
+            competition.get("league", {}).get("name")
+            or competition.get("series", {}).get("fullName")
+            or first_note.get("headline")
+            or competition.get("altGameNote")
+            or ""
+        )
+        if not league_name:
+            return False
+            
+        league_name_lower = league_name.lower()
+        from app.config import SUPPORTED_LEAGUES
+        for big_league in SUPPORTED_LEAGUES.values():
+            if big_league.lower() in league_name_lower:
+                return True
+        return False
 
     def close(self) -> None:
         self._client.close()
@@ -176,10 +214,12 @@ class EspnSoccerProvider:
 
     def _normalize_group(self, group: dict[str, Any], fallback_name: str | None = None) -> dict[str, Any]:
         standings = group.get("standings", {})
-        entries = standings.get("entries", [])
+        entries_data = standings.get("entries", [])
+        entries = [self._normalize_group_entry(entry) for entry in entries_data if isinstance(entry, dict)]
+        entries.sort(key=lambda e: e.get("rank") or 999)
         return {
             "name": group.get("name") or group.get("abbreviation") or standings.get("name") or fallback_name or "Group",
-            "entries": [self._normalize_group_entry(entry) for entry in entries if isinstance(entry, dict)],
+            "entries": entries,
         }
 
     def _normalize_group_entry(self, entry: dict[str, Any]) -> dict[str, Any]:

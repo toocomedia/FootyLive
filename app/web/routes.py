@@ -39,6 +39,7 @@ async def _fetch_internal_json(request: Request, path: str) -> dict[str, Any]:
 
 @router.get("/", response_class=HTMLResponse)
 async def index(request: Request) -> HTMLResponse:
+    from app.config import SUPPORTED_LEAGUES
     payload = await _fetch_internal_json(request, "/api/matches/live")
     groups_payload = await _fetch_internal_json(request, "/api/world-cup/groups")
     return templates.TemplateResponse(
@@ -52,12 +53,14 @@ async def index(request: Request) -> HTMLResponse:
             "groups_title": groups_payload.get("title", "World Cup Groups"),
             "groups_error": groups_payload.get("detail"),
             "page_title": "Live Matches",
+            "supported_leagues": SUPPORTED_LEAGUES,
         },
     )
 
 
 @router.get("/matches", response_class=HTMLResponse)
 async def matches(request: Request, date: str | None = None) -> HTMLResponse:
+    from app.config import SUPPORTED_LEAGUES
     today_date = datetime.now().date()
     
     if date:
@@ -75,8 +78,6 @@ async def matches(request: Request, date: str | None = None) -> HTMLResponse:
         current_date = today_date
         page_title = "Today's Matches"
         
-    date_str = current_date.strftime("%Y-%m-%d")
-    
     date_str = current_date.strftime("%Y-%m-%d")
     
     prev_date = current_date - timedelta(days=1)
@@ -109,6 +110,7 @@ async def matches(request: Request, date: str | None = None) -> HTMLResponse:
             "today_date": today_date.strftime("%Y-%m-%d"),
             "prev_date": prev_date.strftime("%Y-%m-%d"),
             "next_date": next_date.strftime("%Y-%m-%d"),
+            "supported_leagues": SUPPORTED_LEAGUES,
         },
     )
 
@@ -147,17 +149,72 @@ async def team_search(request: Request, q: str = "") -> HTMLResponse:
     )
 
 
-@router.get("/world-cup/groups", response_class=HTMLResponse)
-async def world_cup_groups(request: Request) -> HTMLResponse:
-    payload = await _fetch_internal_json(request, "/api/world-cup/groups")
+
+
+
+@router.get("/api-key", response_class=HTMLResponse)
+async def api_key_page(request: Request) -> HTMLResponse:
+    from app.config import SUPPORTED_LEAGUES
     return templates.TemplateResponse(
         request,
-        "world_cup_groups.html",
+        "api_key.html",
         {
-            "groups": payload.get("groups", []),
-            "count": payload.get("count", 0),
-            "groups_title": payload.get("title", "World Cup Groups"),
-            "error": payload.get("detail"),
-            "page_title": "World Cup Groups",
+            "supported_leagues": SUPPORTED_LEAGUES,
+            "page_title": "API Key Generator",
+        },
+    )
+
+
+@router.get("/leagues", response_class=HTMLResponse)
+async def leagues_index(request: Request) -> HTMLResponse:
+    from app.config import SUPPORTED_LEAGUES
+    
+    international = ["fifa.world", "uefa.euro", "conmebol.america", "caf.nations", "afc.asian"]
+    continental = ["uefa.champions", "uefa.europa"]
+    domestic_leagues = ["eng.1", "esp.1", "ita.1", "ger.1", "fra.1"]
+    domestic_cups = ["eng.fa", "esp.copa_del_rey", "ita.coppa_italia", "ger.dfb_pokal", "fra.coupe_de_france"]
+
+    groups = [
+        ("International Tournaments", {k: SUPPORTED_LEAGUES[k] for k in international if k in SUPPORTED_LEAGUES}),
+        ("Continental Clubs", {k: SUPPORTED_LEAGUES[k] for k in continental if k in SUPPORTED_LEAGUES}),
+        ("Domestic Leagues", {k: SUPPORTED_LEAGUES[k] for k in domestic_leagues if k in SUPPORTED_LEAGUES}),
+        ("Domestic Cups", {k: SUPPORTED_LEAGUES[k] for k in domestic_cups if k in SUPPORTED_LEAGUES}),
+    ]
+
+    return templates.TemplateResponse(
+        request,
+        "leagues.html",
+        {
+            "league_groups": groups,
+            "page_title": "All Leagues & Cups",
+        },
+    )
+
+
+@router.get("/leagues/{slug}", response_class=HTMLResponse)
+async def league_detail(request: Request, slug: str) -> HTMLResponse:
+    from app.config import SUPPORTED_LEAGUES
+    league_name = SUPPORTED_LEAGUES.get(slug, "League Detail")
+    
+    matches_payload = await _fetch_internal_json(request, f"/api/leagues/{slug}/matches")
+    standings_payload = await _fetch_internal_json(request, f"/api/leagues/{slug}/standings")
+    
+    matches_list = matches_payload.get("matches", [])
+    for match in matches_list:
+        if isinstance(match, dict):
+            match["kickoff_time_formatted"] = _format_match_time(match.get("kickoff_time"))
+            
+    return templates.TemplateResponse(
+        request,
+        "league_detail.html",
+        {
+            "league_name": league_name,
+            "matches": matches_list,
+            "matches_count": matches_payload.get("count", 0),
+            "groups": standings_payload.get("groups", []),
+            "groups_count": standings_payload.get("count", 0),
+            "page_title": league_name,
+            "supported_leagues": SUPPORTED_LEAGUES,
+            "selected_league_slug": slug,
         },
     )

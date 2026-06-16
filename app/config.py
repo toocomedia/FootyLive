@@ -2,6 +2,26 @@ from functools import lru_cache
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+SUPPORTED_LEAGUES = {
+    "eng.1": "Premier League",
+    "esp.1": "LALIGA",
+    "ita.1": "Serie A",
+    "ger.1": "Bundesliga",
+    "fra.1": "Ligue 1",
+    "uefa.champions": "Champions League",
+    "uefa.europa": "Europa League",
+    "fifa.world": "World Cup",
+    "uefa.euro": "European Championship",
+    "conmebol.america": "Copa América",
+    "caf.nations": "Africa Cup of Nations",
+    "afc.asian": "Asian Cup",
+    "eng.fa": "FA Cup",
+    "esp.copa_del_rey": "Copa del Rey",
+    "ita.coppa_italia": "Coppa Italia",
+    "ger.dfb_pokal": "DFB-Pokal",
+    "fra.coupe_de_france": "Coupe de France"
+}
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")

@@ -76,14 +76,17 @@ class MatchService:
         )
         return teams
 
-    def get_world_cup_groups(self) -> WorldCupGroupsResponse:
-        cached = self.cache.get("world-cup:groups")
+
+
+    def get_league_standings(self, slug: str) -> WorldCupGroupsResponse:
+        cache_key = f"league:standings:{slug}"
+        cached = self.cache.get(cache_key)
         if cached is not None:
             return cached
 
-        stale = self.cache.get_stale("world-cup:groups")
+        stale = self.cache.get_stale(cache_key)
         try:
-            payload = self.provider.get_world_cup_groups()
+            payload = self.provider.get_league_standings(slug)
             fresh = WorldCupGroupsResponse(
                 title=payload["title"],
                 groups=[GroupTable.model_validate(group) for group in payload["groups"]],
@@ -93,7 +96,14 @@ class MatchService:
             if stale is not None:
                 return stale
             raise
-        return self.cache.set("world-cup:groups", fresh)
+        return self.cache.set(cache_key, fresh)
+
+    def get_league_matches(self, slug: str) -> list[MatchSummary]:
+        return self._cached_model_list(
+            cache_key=f"league:matches:{slug}",
+            fetcher=lambda: self.provider.get_league_matches(slug),
+            model=MatchSummary,
+        )
 
     def _cached_model_list(self, cache_key: str, fetcher: Any, model: Any) -> list[Any]:
         stale = self.cache.get_stale(cache_key)

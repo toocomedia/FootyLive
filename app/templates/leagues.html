@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+  <h1>{{ page_title }}</h1>
+  <p style="opacity: 0.8; margin-top: 0.5rem;">Explore standings and matches for all major competitions.</p>
+</section>
+
+<section class="wc26-container" style="margin-top: 3rem; margin-bottom: 3rem;">
+  {% for group_title, leagues in league_groups %}
+  {% if leagues %}
+  <div style="margin-bottom: 3rem;">
+    <h2 style="margin-bottom: 1.5rem; padding: 0 1rem 0.5rem 1rem; font-size: 1.5rem; color: var(--text); border-bottom: 2px solid var(--border);">{{ group_title }}</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem; padding: 0 1rem;">
+      {% for slug, league_name in leagues.items() %}
+      <a href="/leagues/{{ slug }}" style="text-decoration: none; color: inherit; display: block; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; text-align: center; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.1)'; this.style.borderColor='var(--primary)'" onmouseout="this.style.transform='none'; this.style.boxShadow='none'; this.style.borderColor='var(--border)'">
+        <h3 style="margin: 0; color: var(--text); font-size: 1.2rem;">{{ league_name }}</h3>
+        <p style="margin-top: 0.5rem; color: var(--primary); font-size: 0.9rem; font-weight: 500;">View Details &rarr;</p>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+  {% endfor %}
+</section>
+{% endblock %}

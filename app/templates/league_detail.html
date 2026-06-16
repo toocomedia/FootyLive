@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+  <h1>{{ league_name }}</h1>
+</section>
+
+{% if groups and groups_count > 0 %}
+<section class="wc26-container" style="margin-top: 2rem;">
+  <h2 style="margin-bottom: 1rem; padding: 0 1rem;">Standings</h2>
+  {% for group in groups %}
+    {% if group.name and group.name != "Standings" and group.name != "group" %}
+      <h3 style="margin-top: 2rem; margin-bottom: 0.75rem; padding: 0.5rem 1rem; color: var(--text);">{{ group.name }}</h3>
+    {% endif %}
+    <div class="table-container" style="overflow-x: auto; margin-top: 1rem; background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 0.5rem 1rem;">
+      <table class="data-table" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+        <thead>
+          <tr style="border-bottom: 2px solid var(--border); background: var(--surface-strong);">
+            <th style="padding: 0.75rem 1rem;">#</th>
+            <th style="padding: 0.75rem 1rem;">Team</th>
+            <th style="padding: 0.75rem 1rem;">MP</th>
+            <th style="padding: 0.75rem 1rem;">W</th>
+            <th style="padding: 0.75rem 1rem;">D</th>
+            <th style="padding: 0.75rem 1rem;">L</th>
+            <th style="padding: 0.75rem 1rem;">GD</th>
+            <th style="padding: 0.75rem 1rem;">Pts</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in group.entries %}
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: 0.75rem 1rem;">{{ entry.rank }}</td>
+            <td style="padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.5rem;">
+              {% if entry.flag_path %}
+              <img src="{{ entry.flag_path }}" alt="{{ entry.team_name }} flag" style="width: 20px; height: auto;" />
+              {% endif %}
+              <span style="font-weight: 500;">{{ entry.team_name }}</span>
+            </td>
+            <td style="padding: 0.75rem 1rem; color: var(--muted);">{{ entry.games_played }}</td>
+            <td style="padding: 0.75rem 1rem; color: var(--muted);">{{ entry.wins }}</td>
+            <td style="padding: 0.75rem 1rem; color: var(--muted);">{{ entry.draws }}</td>
+            <td style="padding: 0.75rem 1rem; color: var(--muted);">{{ entry.losses }}</td>
+            <td style="padding: 0.75rem 1rem; color: var(--muted);">{{ entry.goal_difference }}</td>
+            <td style="padding: 0.75rem 1rem; font-weight: bold; color: var(--primary);">{{ entry.points }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endfor %}
+</section>
+{% endif %}
+
+<section class="wc26-container" style="margin-top: 3rem;">
+  <h2 style="margin-bottom: 1rem; padding: 0 1rem;">Matches</h2>
+  {% if matches_count == 0 %}
+  <p class="text-muted">No recent or upcoming matches found for this league.</p>
+  {% else %}
+  {% include "partials/match_list.html" %}
+  {% endif %}
+</section>
+{% endblock %}
